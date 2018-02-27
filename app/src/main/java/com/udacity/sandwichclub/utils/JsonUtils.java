@@ -21,7 +21,7 @@ public class JsonUtils {
     private static final String ARRAY_NAME = "name";
     private static final String MAIN_NAME = "mainName";
     private static final String ALSO_KNOWN_AS = "alsoKnownAs"; // list
-    private static final String PLACE_OF_ORIGINS = "placeOfOrigins";
+    private static final String PLACE_OF_ORIGINS = "placeOfOrigin";
     private static final String SANDWICH_DESCRIPTION = "description";
     private static final String SANDWICH_IMAGE = "image";
     private static final String SANDWICH_INGREDIENTS = "ingredients"; // list
@@ -39,73 +39,62 @@ public class JsonUtils {
      * bread\",\"Cheese\",\"Ham\"]}
      * */
     //required readings : https://developer.android.com/reference/org/json/JSONObject.html - JSONArray.html
+    @SuppressWarnings("ConstantConditions")
     public static Sandwich parseSandwichJson(String json) {
         List<String> alsoKnownAs = null, ingredients = null;
         String strMainName = "", strPlaceOfOringins = "", strDescription = "", strImage = "";
         JSONObject mainName = null, placeOfOrigins = null, description = null, image = null;
         JSONArray alsoKnownJson, ingredientsJson;
         try{
-            json = json.replace("\\", "");
+            //json = json.replace("\\", "");
             JSONObject jsonObject = new JSONObject(json);
             Log.d(TAG, jsonObject.getJSONObject(ARRAY_NAME).toString());
             Log.d(TAG, json);
             for(Iterator<String> iter = jsonObject.keys(); iter.hasNext(); ) {
                 String keyName = iter.next();
-                Log.d(TAG, keyName);
+                JSONObject name = jsonObject.getJSONObject(ARRAY_NAME);
+                //Log.d(TAG, keyName);
                 switch (keyName) {
                     case ARRAY_NAME:
-                        strMainName = jsonObject.getString(MAIN_NAME);
-                        break;
-                    case ALSO_KNOWN_AS://https://stackoverflow.com/questions/6697147/json-iterate-through-jsonarray
-                        alsoKnownJson = jsonObject.getJSONArray(ALSO_KNOWN_AS);
+                        strMainName = name.optString(MAIN_NAME, null);//getString(MAIN_NAME);
+                        Log.d(TAG, "Main Name: " + strMainName);
                         alsoKnownAs = new ArrayList<>();
-                        if (alsoKnownJson != null && alsoKnownJson.length() > 1){//not null and also has elements greater than 1
-                            for (int i = 0; i < alsoKnownJson.length(); i++) {
-                                JSONObject objects = alsoKnownJson.getJSONObject(i);
-                                Iterator key = objects.keys();
-                                while (key.hasNext()) {
-                                    String k = key.next().toString();//key name
-                                    String strValue = objects.getString(k);// value
-                                    alsoKnownAs.add(strValue);
-                                }
+                        if(name.has(ALSO_KNOWN_AS) && !name.isNull(ALSO_KNOWN_AS)){
+                            alsoKnownJson = name.getJSONArray(ALSO_KNOWN_AS);
+                            for(int i=0; i<alsoKnownJson.length(); i++){
+                                alsoKnownAs.add(alsoKnownJson.getString(i));//optString(i, null)
                             }
-                        } else if(alsoKnownJson != null && alsoKnownJson.length() == 1){//not null and at least 1 element
-                            alsoKnownAs.add(alsoKnownJson.getString(0));
-                        } else {//array is empty
+                        } else {
                             alsoKnownAs.add(String.valueOf(R.string.detail_error_message));
                         }
                         break;
                     case PLACE_OF_ORIGINS:
-                        strPlaceOfOringins = jsonObject.getString(PLACE_OF_ORIGINS);
+                        strPlaceOfOringins = jsonObject.getString(PLACE_OF_ORIGINS);//.optString(PLACE_OF_ORIGINS, null);
+                        Log.d(TAG, "Origins: " + strPlaceOfOringins);
                         break;
                     case SANDWICH_DESCRIPTION:
                         strDescription = jsonObject.getString(SANDWICH_DESCRIPTION);
+                        Log.d(TAG, "Description: " + strDescription);
                         break;
                     case SANDWICH_IMAGE:
                         strImage = jsonObject.getString(SANDWICH_IMAGE);
+                        Log.d(TAG, "Image Path: " + strImage);
                         break;
                     case SANDWICH_INGREDIENTS:
-                        ingredientsJson = jsonObject.getJSONArray(SANDWICH_INGREDIENTS);
+                        Log.d(TAG, "INGREDIENTS: ");
                         ingredients = new ArrayList<>();
-                        if (ingredientsJson != null && ingredientsJson.length() > 1){//not null and also has elements greater than 1
-                            for (int i = 0; i < ingredientsJson.length(); i++) {
-                                JSONObject objects = ingredientsJson.getJSONObject(i);
-                                Iterator key = objects.keys();
-                                while (key.hasNext()) {
-                                    String k = key.next().toString();//key name
-                                    String strValue = objects.getString(k);// value
-                                    ingredients.add(strValue);
-                                }
+                        if(jsonObject.has(SANDWICH_INGREDIENTS) && !jsonObject.isNull(SANDWICH_INGREDIENTS)){
+                            ingredientsJson = jsonObject.getJSONArray(SANDWICH_INGREDIENTS);
+                            for(int i=0; i<ingredientsJson.length(); i++){
+                                ingredients.add(ingredientsJson.getString(i));//optString(i, null)
                             }
-                        } else if(ingredientsJson != null && ingredientsJson.length() == 1){//not null and at least 1 element
-                            ingredients.add(ingredientsJson.getString(0));
-                        } else {//array is empty
+                        } else {
                             ingredients.add(String.valueOf(R.string.detail_error_message));
                         }
                         break;
                     default:
-                        //Log.d(TAG, "default: " + keyName);
-                        break;
+                        Log.d(TAG, "default: " + iter.toString());
+                        //break;
                 }//end switch
             }//end for loop
 

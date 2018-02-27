@@ -73,4 +73,8 @@ public class Sandwich {
     public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
     }
+
+    public String toString(){
+        return getMainName() + "\n" + getPlaceOfOrigin() + "\n" + getImage() + "\n" + getDescription() + "\n";
+    }
 }
